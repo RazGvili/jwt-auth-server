@@ -16,6 +16,8 @@ import { createAccessToken } from './auth';
 import { isAuth } from './middlewares/isAuthenticated';
 import { sendRefreshToken } from './auth';
 import { getConnection } from 'typeorm';
+import { verify } from 'jsonwebtoken';
+import { JWT } from '../configs';
 
 @ObjectType()
 class LoginResponse {
@@ -73,6 +75,35 @@ export class UserResolver {
         } catch (err) {
             console.log(err);
             return false;
+        }
+    }
+
+    /**
+     * Read token from header
+     * Parse token and send user
+     * If error return null
+     * @param context
+     * @returns
+     */
+    @Query(() => User, { nullable: true } /* Allow Query to return null*/)
+    me(@Ctx() context: Context) {
+        const authorization = context.req.headers['authorization'];
+
+        if (!authorization) {
+            return null;
+        }
+
+        try {
+            const secret = JWT.secret;
+            const token = authorization.split(' ')[1];
+
+            // TODO fix any
+            const authPayload: any = verify(token, secret);
+
+            return User.findOne(authPayload.userId);
+        } catch (err) {
+            console.log('me ~ err)', err);
+            return null;
         }
     }
 

@@ -3,13 +3,17 @@ import { Context } from 'src/Context';
 import { MiddlewareFn } from 'type-graphql';
 import { JWT } from '../../configs';
 
+/**
+ * TODO
+ * 1. Extract token to a function
+ */
 export const isAuth: MiddlewareFn<Context> = ({ context }, next) => {
     const secret = JWT.secret;
 
     // Expect the client to send an authorization header
     // Example: bearer 1234
     const authorization = context.req.headers['authorization'];
-    console.log('authorization', authorization);
+
     if (!authorization) {
         throw new Error('not authenticated');
     }
